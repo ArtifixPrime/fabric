@@ -1,0 +1,69 @@
+#  Base image 
+FROM tensorflow/tensorflow:1.13.1-gpu
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    git wget curl build-essential cmake \
+    libgl1-mesa-glx libosmesa6-dev libglib2.0-0 \
+    libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev \
+    freeglut3-dev unzip patchelf && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Anaconda
+RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O ~/anaconda.sh && \
+    /bin/bash ~/anaconda.sh -b -p /opt/conda && \
+    rm ~/anaconda.sh
+ENV PATH=/opt/conda/bin:$PATH   
+
+# Create conda environment with Python 3.6 
+RUN conda create -y -n py3-cloth python=3.6
+SHELL ["conda", "run", "-n", "py3-cloth", "/bin/bash", "-c"]
+
+# Upgrade pip and basic dependencies 
+RUN pip install --upgrade pip setuptools wheel
+
+# Clone gym-cloth repository
+WORKDIR /workspace
+RUN git clone https://github.com/DanielTakeshi/gym-cloth.git
+WORKDIR /workspace/gym-cloth
+
+# Install Python dependencies 
+RUN pip install -r requirements.txt || true
+RUN pip install numpy scipy matplotlib opencv-python imageio tqdm gym pyopengl glfw cython
+
+# Build the renderer 
+WORKDIR /workspace/gym-cloth/render/ext/libzmq
+RUN mkdir build && cd build && cmake .. && make -j4 install
+
+WORKDIR /workspace/gym-cloth/render/ext/cppzmq
+RUN mkdir build && cd build && cmake .. && make -j4 install || true
+
+WORKDIR /workspace/gym-cloth/render
+RUN mkdir build && cd build && cmake .. && make -j4
+
+WORKDIR /workspace/gym-cloth
+RUN python setup.py install
+
+# Clone and install baselines-fork repository
+WORKDIR /workspace
+RUN git clone https://github.com/DanielTakeshi/baselines-fork.git
+WORKDIR /workspace/baselines-fork
+RUN pip install -e .
+
+# Install TensorFlow GPU explicitly
+RUN pip install tensorflow-gpu==1.13.1
+
+# Install Blender 2.79
+WORKDIR /opt
+RUN wget https://download.blender.org/release/Blender2.79/blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
+    tar -xvjf blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
+    rm blender-2.79b-linux-glibc219-x86_64.tar.bz2
+ENV PATH="/opt/blender-2.79b-linux-glibc219-x86_64:${PATH}"
+
+# Environment variables 
+ENV PYTHONPATH=/workspace/gym-cloth:/workspace/baselines-fork
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+ENV CONDA_DEFAULT_ENV=py3-clot
+
+# Default command 
+CMD ["conda", "run", "--no-capture-output", "-n", "py3-cloth", "bash"]
