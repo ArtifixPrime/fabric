@@ -76,7 +76,7 @@ RUN echo "conda activate py3-cloth" >> ~/.bashrc
 
 # Environment variables 
 ENV PYTHONPATH=/workspace/gym-cloth:/workspace/baselines-fork
-ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/cuda-10.0/compat:$LD_LIBRARY_PATH
 ENV CONDA_DEFAULT_ENV=py3-cloth
 
 # Default command
