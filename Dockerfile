@@ -77,7 +77,7 @@ RUN echo "conda activate py3-cloth" >> ~/.bashrc
 # Environment variables 
 ENV PYTHONPATH=/workspace/gym-cloth:/workspace/baselines-fork
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-ENV CONDA_DEFAULT_ENV=py3-clot
+ENV CONDA_DEFAULT_ENV=py3-cloth
 
 # Default command
 CMD ["conda", "run", "--no-capture-output", "-n", "py3-cloth", "bash"]
