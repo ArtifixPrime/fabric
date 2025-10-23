@@ -19,8 +19,12 @@ ENV PATH=/opt/conda/bin:$PATH
 RUN conda create -y -n py3-cloth python=3.6
 SHELL ["conda", "run", "-n", "py3-cloth", "/bin/bash", "-c"]
 
-# Upgrade pip and basic dependencies 
-RUN pip install --upgrade pip setuptools wheel
+# Install Blender 2.79
+WORKDIR /opt
+RUN wget https://download.blender.org/release/Blender2.79/blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
+    tar -xvjf blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
+    rm blender-2.79b-linux-glibc219-x86_64.tar.bz2
+ENV PATH="/opt/blender-2.79b-linux-glibc219-x86_64:${PATH}"
 
 # Clone gym-cloth repository
 WORKDIR /workspace
