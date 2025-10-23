@@ -36,15 +36,24 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt && \
     pip install numpy scipy matplotlib opencv-python imageio tqdm gym pyopengl glfw cython
 
-# Build the renderer 
+# Build the renderer
 WORKDIR /workspace/gym-cloth/render/ext/libzmq
-RUN mkdir build && cd build && cmake .. && make -j4 install
+RUN mkdir build && \
+    cd build && \ 
+    cmake .. && \
+    make -j4 install
 
 WORKDIR /workspace/gym-cloth/render/ext/cppzmq
-RUN mkdir build && cd build && cmake .. && make -j4 install || true
+RUN mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j4 install
 
 WORKDIR /workspace/gym-cloth/render
-RUN mkdir build && cd build && cmake .. && make -j4
+RUN mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j4
 
 WORKDIR /workspace/gym-cloth
 RUN python setup.py install
