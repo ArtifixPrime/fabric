@@ -13,10 +13,13 @@ RUN apt-get update && apt-get install -y \
 RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O ~/anaconda.sh && \
     /bin/bash ~/anaconda.sh -b -p /opt/conda && \
     rm ~/anaconda.sh
-ENV PATH=/opt/conda/bin:$PATH   
+ENV PATH=/opt/conda/bin:$PATH
 
 # Create conda environment with Python 3.6 
 RUN conda create -y -n py3-cloth python=3.6
+ENV PATH=/opt/conda/envs/py3-clot/bin:$PATH
+
+# Make conda environment active for every RUN command during image building
 SHELL ["conda", "run", "-n", "py3-cloth", "/bin/bash", "-c"]
 
 # Install Blender 2.79
@@ -64,20 +67,17 @@ RUN git clone https://github.com/DanielTakeshi/baselines-fork.git
 WORKDIR /workspace/baselines-fork
 RUN pip install -e .
 
-# Install TensorFlow GPU explicitly
+# Install TensorFlow GPU to conda environment
 RUN pip install tensorflow-gpu==1.13.1
 
-# Install Blender 2.79
-WORKDIR /opt
-RUN wget https://download.blender.org/release/Blender2.79/blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
-    tar -xvjf blender-2.79b-linux-glibc219-x86_64.tar.bz2 && \
-    rm blender-2.79b-linux-glibc219-x86_64.tar.bz2
-ENV PATH="/opt/blender-2.79b-linux-glibc219-x86_64:${PATH}"
+# Initialise conda and activate py3-cloth with every new shell session
+RUN conda init bash
+RUN echo "conda activate py3-cloth" >> ~/.bashrc
 
 # Environment variables 
 ENV PYTHONPATH=/workspace/gym-cloth:/workspace/baselines-fork
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 ENV CONDA_DEFAULT_ENV=py3-clot
 
-# Default command 
+# Default command
 CMD ["conda", "run", "--no-capture-output", "-n", "py3-cloth", "bash"]
