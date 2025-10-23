@@ -27,9 +27,10 @@ WORKDIR /workspace
 RUN git clone https://github.com/DanielTakeshi/gym-cloth.git
 WORKDIR /workspace/gym-cloth
 
-# Install Python dependencies 
-RUN pip install -r requirements.txt || true
-RUN pip install numpy scipy matplotlib opencv-python imageio tqdm gym pyopengl glfw cython
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install -r requirements.txt && \
+    pip install numpy scipy matplotlib opencv-python imageio tqdm gym pyopengl glfw cython
 
 # Build the renderer 
 WORKDIR /workspace/gym-cloth/render/ext/libzmq
